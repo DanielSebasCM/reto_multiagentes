@@ -26,9 +26,7 @@ class ExplorerAgent(Agent):
 
     def step(self):
         
-        # self.model.known[self.pos[0]][self.pos[1]] = self.model.real[self.pos[0]][self.pos[1]]
-        
-        self.model.known = self.model.real.copy()
+        self.model.known[self.pos[0]][self.pos[1]] = self.model.real[self.pos[0]][self.pos[1]]
         
         self.move()
 
