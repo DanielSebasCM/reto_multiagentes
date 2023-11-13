@@ -44,6 +44,7 @@ class CollectorAgent(Agent):
 
     def move(self, cell: tuple[int, int]):
         if cell == None:
+            self.model.grid.move_agent(self, self.get_random_move())
             return
 
         pos = self.pos
@@ -66,6 +67,21 @@ class CollectorAgent(Agent):
         else:
             self.attempt_move(cell)
 
+    def get_random_move(self):
+        neighbourCells = self.model.grid.get_neighborhood(
+            self.pos, moore=True, include_center=False)
+
+        empty_neighbours = [
+            c for c in neighbourCells if self.model.grid.is_cell_empty(c)]
+
+        potential_cells = [
+            c for c in empty_neighbours if self.model.known[c[0]][c[1]] == EMPTY]
+
+        if len(potential_cells) > 0:
+            new_position = self.random.choice(potential_cells)
+            return new_position
+        else:
+            return None
 
     def attempt_move(self, cell):
         possible_cells = self.model.grid.get_neighborhood(
@@ -85,7 +101,6 @@ class CollectorAgent(Agent):
         if closest_empty != None:
             self.model.grid.move_agent(self, closest_empty)
 
-
     def attempt_collect(self):
         if self.model.real[self.pos[0]][self.pos[1]] == FOOD:
             if self.food_collected < self.max_food:
@@ -104,13 +119,11 @@ class CollectorAgent(Agent):
         self.attempt_collect()
 
         if self.food_collected > 0:
-            if self.model.storage_pos != None:
-                self.move(self.model.storage_pos)
+            self.move(self.model.storage_pos)
             return
 
         food_cells = self.find_food()
         closest_food = self.get_closest_food(food_cells)
-
         self.move(closest_food)
 
 
@@ -127,16 +140,16 @@ class ExplorerAgent(Agent):
 
     def front(self):
         return (self.pos[0] + self.dir[0], self.pos[1] + self.dir[1])
-    
+
     def left(self):
         return (self.pos[0] + self.dir[1], self.pos[1] - self.dir[0])
 
     def right(self):
         return (self.pos[0] - self.dir[1], self.pos[1] + self.dir[0])
-    
+
     def back(self):
         return (self.pos[0] - self.dir[0], self.pos[1] - self.dir[1])
-    
+
     def step(self):
         self.model.known[self.pos[0]][self.pos[1]
                                       ] = self.model.real[self.pos[0]][self.pos[1]]
@@ -146,7 +159,7 @@ class ExplorerAgent(Agent):
 
     def turn_left(self):
         self.dir = (self.dir[1], -self.dir[0])
-    
+
     def turn_right(self):
         self.dir = (-self.dir[1], self.dir[0])
 
@@ -156,14 +169,14 @@ class ExplorerAgent(Agent):
                 dir = 1
             elif self.pos[0] > self.col_end:
                 dir = -1
-            
+
             self.attempt_move((self.pos[0] + dir, self.pos[1]))
         else:
             if self.pos[0] == self.col_start:
                 self.sweeping_dir = 1
             elif self.pos[0] == self.col_end:
                 self.sweeping_dir = -1
-            
+
             if self.front()[1] < 0:
                 if self.sweeping_dir == 1:
                     self.turn_right()
@@ -174,27 +187,37 @@ class ExplorerAgent(Agent):
                     self.turn_left()
                 else:
                     self.turn_right()
-            
+
             elif self.left()[1] < 0 or self.left()[1] >= self.model.grid.height:
                 self.turn_right()
-            
+
             elif self.right()[1] < 0 or self.right()[1] >= self.model.grid.height:
                 self.turn_left()
 
             self.attempt_move(self.front())
-            
-            
-
-            
-        
-
-    
 
     def attempt_move(self, new_pos):
         if self.model.grid.is_cell_empty(new_pos):
             self.model.grid.move_agent(self, new_pos)
         else:
-            return
+            possible_cells = self.model.grid.get_neighborhood(
+                self.pos, moore=True, include_center=False)
+            empty_cells = [
+                c for c in possible_cells if self.model.grid.is_cell_empty(c)]
+
+            closest_empty = None
+            closest_distance = math.inf
+            for empty_cell in empty_cells:
+                distance = math.sqrt(
+                    (empty_cell[0] - new_pos[0])**2 + (empty_cell[1] - new_pos[1])**2)
+                if distance < closest_distance:
+                    closest_distance = distance
+                    closest_empty = empty_cell
+
+            if closest_empty != None:
+                self.model.grid.move_agent(self, closest_empty)
+
+
 class StorageModel(Model):
     def __init__(self, width, height, explorers, collectors, max_food, render=False):
         random.seed(12345)
