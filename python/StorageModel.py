@@ -330,12 +330,14 @@ class StorageModel(Model):
         for agent in self.schedule.agents:
             if agent.type == COLLECTOR_TYPE:
                 collectors.append({
+                    "id": agent.unique_id,
                     "x": agent.pos[0],
                     "y": agent.pos[1],
                     "food_collected": agent.food_collected,
                 })
             else:
                 explorers.append({
+                    "id": agent.unique_id,
                     "x": agent.pos[0],
                     "y": agent.pos[1]
                 })
