@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 2143442812333240545}
   - component: {fileID: 6794748006055529201}
   - component: {fileID: 5921721095002612970}
+  - component: {fileID: 8736534537268531070}
   m_Layer: 0
   m_Name: Food
   m_TagString: Untagged
@@ -107,3 +108,15 @@ CapsuleCollider:
   m_Height: 2
   m_Direction: 1
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &8736534537268531070
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5814773136705738098}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 64df0c855da28c8b7bea623720654ef6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
