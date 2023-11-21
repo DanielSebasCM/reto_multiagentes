@@ -5,7 +5,6 @@ from mesa.datacollection import DataCollector
 import math
 
 import numpy as np
-import random
 from typing import (Union)
 
 from util import *
@@ -15,6 +14,7 @@ class CollectorAgent(Agent):
 
     def __init__(self, id, model: "StorageModel"):
         super().__init__(id, model)
+        self.random.seed(12345)
         self.model = model
         self.type = COLLECTOR_TYPE
         self.food_collected = 0
@@ -130,6 +130,7 @@ class CollectorAgent(Agent):
 class ExplorerAgent(Agent):
     def __init__(self, id, model: "StorageModel", col_start, col_end):
         super().__init__(id, model)
+        self.random.seed(12345)
         self.model = model
         self.type = EXPLORER_TYPE
         self.col_start = col_start
@@ -220,7 +221,7 @@ class ExplorerAgent(Agent):
 
 class StorageModel(Model):
     def __init__(self, width, height, explorers, collectors, max_food, render=False):
-        random.seed(12345)
+        self.random.seed(12345)
         self.width = width
         self.height = height
         self.explorers = explorers
@@ -356,15 +357,15 @@ class StorageModel(Model):
     def get_random_coords(self):
         isEmpty = False
         while not isEmpty:
-            x = random.randint(0, self.width - 1)
-            y = random.randint(0, self.width - 1)
+            x = self.random.randint(0, self.width - 1)
+            y = self.random.randint(0, self.width - 1)
             if self.real[x][y] == EMPTY:
                 isEmpty = True
 
         return (x, y)
 
     def place_food(self):
-        foodToPlace = random.randint(2, 5)
+        foodToPlace = self.random.randint(2, 5)
         new_total = self.total_food + foodToPlace
 
         if new_total > self.max_food:
