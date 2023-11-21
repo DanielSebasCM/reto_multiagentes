@@ -1,9 +1,10 @@
-﻿// TC2008B Modelación de Sistemas Multiagentes con gráficas computacionales
+// TC2008B Modelación de Sistemas Multiagentes con gráficas computacionales
 // C# client to interact with Python server via POST
 // Sergio Ruiz-Loza, Ph.D. March 2021
 
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -11,8 +12,8 @@ using UnityEngine.Networking;
 
 public class WebClient : MonoBehaviour
 {
-    // IEnumerator - yield return
-    IEnumerator GetData()
+
+    public IEnumerator GetData()
     {
         string url = "http://localhost:8585";
         using (UnityWebRequest www = UnityWebRequest.Get(url))
@@ -21,24 +22,19 @@ public class WebClient : MonoBehaviour
             www.SetRequestHeader("Content-Type", "application/json");
 
             yield return www.SendWebRequest();          // Talk to Python
-            if(www.result == UnityWebRequest.Result.ConnectionError || www.result == UnityWebRequest.Result.ProtocolError)
+            if (www.result == UnityWebRequest.Result.ConnectionError || www.result == UnityWebRequest.Result.ProtocolError)
             {
                 Debug.Log(www.error);
+                yield return null;
             }
             else
             {
                 Debug.Log(www.downloadHandler.text);    // Answer from Python
                 ModelResponse res = JsonUtility.FromJson<ModelResponse>(www.downloadHandler.text);
-                Debug.Log(res);
+                Debug.Log(res.ToString());
+                yield return res;
             }
         }
 
-    }
-
-
-    // Start is called before the first frame update
-    void Start()
-    {
-        StartCoroutine(GetData());
     }
 }

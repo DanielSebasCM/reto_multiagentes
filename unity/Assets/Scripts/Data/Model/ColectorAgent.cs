@@ -1,7 +1,10 @@
+using System;
+
+[Serializable]
 public class CollectorAgent
 {
-    public int id { get; set; }
-    public int x { get; set; }
-    public int y { get; set; }
-    public int food_collected { get; set; }
+    public int id;
+    public int x;
+    public int y;
+    public int food_collected;
 }

@@ -1,6 +1,9 @@
+using System;
+
+[Serializable]
 public class Storage
 {
-    public int x { get; set; }
-    public int y { get; set; }
-    public bool found { get; set; }
+    public int x;
+    public int y;
+    public bool found;
 }

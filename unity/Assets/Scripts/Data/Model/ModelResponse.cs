@@ -1,8 +1,10 @@
 // Root myDeserializedClass = JsonConvert.DeserializeObject<Root>(myJsonResponse);
+using System;
 using System.Collections.Generic;
 
+[Serializable]
 public class ModelResponse
 {
-    public int steps { get; set; }
-    public List<Step> data { get; set; }
+    public int steps;
+    public List<Step> data;
 }

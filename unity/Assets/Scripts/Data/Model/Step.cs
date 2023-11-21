@@ -1,13 +1,14 @@
+using System;
 using System.Collections.Generic;
-
+[Serializable]
 public class Step
 {
-    public List<Food> food { get; set; }
-    public List<CollectorAgent> collectors { get; set; }
-    public List<ExplorerAgent> explorers { get; set; }
-    public Storage storage { get; set; }
-    public int max_food { get; set; }
-    public int total_food { get; set; }
-    public int collected_food { get; set; }
-    public int steps_taken { get; set; }
+    public List<Food> food;
+    public List<CollectorAgent> collectors;
+    public List<ExplorerAgent> explorers;
+    public Storage storage;
+    public int max_food;
+    public int total_food;
+    public int collected_food;
+    public int steps_taken;
 }
