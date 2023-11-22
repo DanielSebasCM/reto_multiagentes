@@ -7,15 +7,13 @@ public class Collector : MonoBehaviour
     public int id;
     public int x;
     public int y;
-
     GameObject food;
+    Animator animator;
 
     void Awake()
     {
-        Debug.Log("Collector Start");
         food = transform.FirstOrDefault(x => x.CompareTag("Food")).gameObject;
-        Debug.Log("DoneLookingForFood");
-        Debug.Log(food);
+        animator = GetComponent<Animator>();
     }
 
     public void Init(int id, int x, int y)
@@ -27,6 +25,15 @@ public class Collector : MonoBehaviour
 
     public void Step(int x, int y, float time, bool isCarryingFood)
     {
+                // if not movng play anim sit
+        if (this.x == x && this.y == y)
+        {
+            animator.Play("sit");
+        }
+        else
+        {
+            animator.Play("walk");
+        }
         this.x = x;
         this.y = y;
         if (isCarryingFood)

@@ -86,7 +86,7 @@ public class Schedule : MonoBehaviour
             // crear las instancias y ponerlas en el array
             foreach (Food currentFood in currentStep.food)
             {
-                GameObject foodInstance = Instantiate(foodPrefab, new Vector3(currentFood.x, 0, currentFood.y), Quaternion.identity);
+                GameObject foodInstance = Instantiate(foodPrefab, new Vector3(currentFood.x, 0.05f, currentFood.y), Quaternion.identity);
                 ScriptHolder<FoodPrefab> holder = new(foodInstance, foodInstance.GetComponent<FoodPrefab>());
                 foods.Add(holder);
             }

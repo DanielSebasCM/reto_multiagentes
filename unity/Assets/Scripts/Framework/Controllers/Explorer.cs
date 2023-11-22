@@ -12,10 +12,7 @@ public class Explorer : MonoBehaviour
 
     void Awake()
     {
-        Debug.Log("Explorer Start");
         animator = GetComponent<Animator>();
-        Debug.Log("Animator");
-        Debug.Log(animator);
     }
     public void Init(int id, int x, int y)
     {
