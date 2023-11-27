@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 using UnityEngine;
+using TMPro;
 
 public class Schedule : MonoBehaviour
 {
@@ -19,6 +20,8 @@ public class Schedule : MonoBehaviour
 
     [Range(0.01f, 1f)]
     public float interval = 0.5f;
+
+    public TextMeshProUGUI text;
 
     // Start is called before the first frame update
     void Start()
@@ -80,9 +83,11 @@ public class Schedule : MonoBehaviour
         //     ScriptHolder<FoodPrefab> holder = new(foodInstance, foodInstance.GetComponent<FoodPrefab>());
         //     foods.Add(holder);
         // }
-
+        int step = 0;
         foreach (Step currentStep in res.data)
         {
+            step++;
+            text.text = $"Step: {step}\nFood collected: {currentStep.collected_food}";
             // crear las instancias y ponerlas en el array
             foreach (Food currentFood in currentStep.food)
             {
@@ -110,6 +115,16 @@ public class Schedule : MonoBehaviour
                 Destroy(food.gameObject);
             }
             foods.Clear();
+        }
+
+        foreach (ScriptHolder<Collector> collector in collectors)
+        {
+            collector.script.Stop();
+        }
+
+        foreach (ScriptHolder<Explorer> explorer in explorers)
+        {
+            explorer.script.Stop();
         }
     }
 }
