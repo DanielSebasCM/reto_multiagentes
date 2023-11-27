@@ -251,6 +251,11 @@ class StorageModel(Model):
         extras = width % explorers
         col_start = None
         id = 0
+
+        (storage_x, storage_y) = self.get_random_coords()
+        self.real[storage_x, storage_y] = STORAGE
+
+
         for _ in range(explorers):
             if col_start == None:
                 col_start = 0
@@ -274,8 +279,7 @@ class StorageModel(Model):
             self.schedule.add(a)
             id += 1
 
-        (storage_x, storage_y) = self.get_random_coords()
-        self.real[storage_x, storage_y] = STORAGE
+
 
     def step(self):
         self.datacollector.collect(self)
