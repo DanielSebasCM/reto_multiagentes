@@ -3,7 +3,7 @@ Shader "Custom/Grayscale"
     Properties
     {
         _MainTex ("Texture", 2D) = "white" { }
-        _Brightness ("Brightness", Range(0, 1)) = 0.5
+        _Brightness ("Brightness", Range(0, 1)) = 1
     }
     SubShader
     {
