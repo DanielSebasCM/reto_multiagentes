@@ -10,6 +10,11 @@ from typing import (Union)
 from util import *
 
 
+U_TURN_RIGHT_1 = 1
+U_TURN_RIGHT_2 = 2
+U_TURN_LEFT_1 = 3
+U_TURN_LEFT_2 = 4
+
 class CollectorAgent(Agent):
 
     def __init__(self, id, model: "StorageModel"):
@@ -61,7 +66,6 @@ class CollectorAgent(Agent):
             new_y += int(diff_y / abs(diff_y))
 
         new_pos = (new_x, new_y)
-
         if self.model.grid.is_cell_empty(new_pos):
             self.model.grid.move_agent(self, new_pos)
         else:
@@ -130,12 +134,14 @@ class CollectorAgent(Agent):
 class ExplorerAgent(Agent):
     def __init__(self, id, model: "StorageModel", col_start, col_end):
         super().__init__(id, model)
+        # print(f"Explorer {id} created, col_start: {col_start}, col_end: {col_end}")
         self.random.seed(12345)
         self.model = model
         self.type = EXPLORER_TYPE
         self.col_start = col_start
         self.col_end = col_end
         self.dir = (0, 1)
+        self.turning = 0
         self.sweeping_dir = 1
         self.finding_path = True
 
@@ -165,37 +171,65 @@ class ExplorerAgent(Agent):
         self.dir = (-self.dir[1], self.dir[0])
 
     def move(self):
-        if self.pos[0] < self.col_start or self.pos[0] > self.col_end:
-            if self.pos[0] < self.col_start:
-                dir = 1
-            elif self.pos[0] > self.col_end:
-                dir = -1
-
+        if self.turning != 0:
+            self.u_turn()
+            return
+        
+        dir = 0
+        if self.pos[0] < self.col_start:
+            dir = 1
+        elif self.pos[0] > self.col_end:
+            dir = -1
+        if dir != 0:
             self.attempt_move((self.pos[0] + dir, self.pos[1]))
-        else:
-            if self.pos[0] == self.col_start:
-                self.sweeping_dir = 1
-            elif self.pos[0] == self.col_end:
-                self.sweeping_dir = -1
+            return
 
-            if self.front()[1] < 0:
-                if self.sweeping_dir == 1:
-                    self.turn_right()
-                else:
-                    self.turn_left()
-            elif self.front()[1] >= self.model.grid.height:
-                if self.sweeping_dir == 1:
-                    self.turn_left()
-                else:
-                    self.turn_right()
+        if self.pos[0] == self.col_start:
+            self.sweeping_dir = 1
+        elif self.pos[0] == self.col_end:
+            self.sweeping_dir = -1
 
-            elif self.left()[1] < 0 or self.left()[1] >= self.model.grid.height:
-                self.turn_right()
+        if self.front()[1] < 0:
+            if self.sweeping_dir == 1:
+                self.turning = U_TURN_RIGHT_1
+            else:
+                self.turning = U_TURN_LEFT_1
+            self.u_turn()
+            return
+                
+        elif self.front()[1] >= self.model.grid.height:
+            if self.sweeping_dir == 1:
+                self.turning = U_TURN_LEFT_1
+            else:
+                self.turning = U_TURN_RIGHT_1
+            self.u_turn()
+            return
+        
+        self.force_move(self.front())
 
-            elif self.right()[1] < 0 or self.right()[1] >= self.model.grid.height:
-                self.turn_left()
+        # elif self.left()[1] < 0 or self.left()[1] >= self.model.grid.height:
+        #     self.turn_right()
 
-            self.attempt_move(self.front())
+        # elif self.right()[1] < 0 or self.right()[1] >= self.model.grid.height:
+        #     self.turn_left()
+
+    def u_turn(self):
+        if self.turning == U_TURN_RIGHT_1:
+            self.turn_right()
+            self.force_move(self.front())
+            self.turning = U_TURN_RIGHT_2
+        elif self.turning == U_TURN_RIGHT_2:
+            self.turn_right()
+            self.force_move(self.front())
+            self.turning = 0
+        elif self.turning == U_TURN_LEFT_1:
+            self.turn_left()
+            self.force_move(self.front())
+            self.turning = U_TURN_LEFT_2
+        elif self.turning == U_TURN_LEFT_2:
+            self.turn_left()
+            self.force_move(self.front())
+            self.turning = 0
 
     def attempt_move(self, new_pos):
         if self.model.grid.is_cell_empty(new_pos):
@@ -217,15 +251,25 @@ class ExplorerAgent(Agent):
 
             if closest_empty != None:
                 self.model.grid.move_agent(self, closest_empty)
-
-
+    
+    def force_move(self, new_pos):
+        try:
+            if self.model.grid.is_cell_empty(new_pos):
+                self.model.grid.move_agent(self, new_pos)
+        except:
+            # print("Te vas a caer pendejo")
+            pass
 class StorageModel(Model):
-    def __init__(self, width, height, explorers, collectors, max_food, render=False):
+    def __init__(self, shape : tuple[int, int], agents :tuple[int, int], max_food, render=False, simulating=False):
+        # print parameters
+        # print("Shape: ", shape)
+        # print("Agents: ", agents)
+        # print("Max Food: ", max_food)
         self.random.seed(12345)
-        self.width = width
-        self.height = height
-        self.explorers = explorers
-        self.collectors = collectors
+        self.width = shape[0]
+        self.height = shape[1]
+        self.explorers = agents[0]
+        self.collectors = agents[1]
         self.max_food = max_food
         self.steps_taken = 0
         self.total_food = 0
@@ -233,22 +277,25 @@ class StorageModel(Model):
         self.storage_pos = None
         self.running = True
 
-        self.grid = SingleGrid(width, height, False)
-        self.known = np.zeros((width, height), dtype=int)
-        self.real = np.zeros((width, height), dtype=int)
+        self.grid = SingleGrid(self.width, self.height, False)
+        self.known = np.zeros((self.width, self.height), dtype=int)
+        self.real = np.zeros((self.width, self.height), dtype=int)
         self.schedule = RandomActivation(self)
 
-        reporters = {"Data": self.get_data}
+        if simulating:
+            reporters = {"Steps": lambda m: m.steps_taken}
+        else:
+            reporters = {"Data": self.get_data}
 
-        if render:
-            reporters["Known"] = self.get_known
-            reporters["Real"] = self.get_real
-            reporters["Agents"] = self.get_agents
+            if render:
+                reporters["Known"] = self.get_known
+                reporters["Real"] = self.get_real
+                reporters["Agents"] = self.get_agents
 
         self.datacollector = DataCollector(model_reporters=reporters)
 
-        width_per_explorer = width // explorers
-        extras = width % explorers
+        width_per_explorer = self.width // self.explorers
+        extras = self.width % self.explorers
         col_start = None
         id = 0
 
@@ -256,7 +303,7 @@ class StorageModel(Model):
         self.real[storage_x, storage_y] = STORAGE
 
 
-        for _ in range(explorers):
+        for _ in range(self.explorers):
             if col_start == None:
                 col_start = 0
             else:
@@ -272,7 +319,7 @@ class StorageModel(Model):
             self.schedule.add(a)
             id += 1
 
-        for _ in range(collectors):
+        for _ in range(self.collectors):
 
             a = CollectorAgent(id, self)
             self.grid.move_to_empty(a)
