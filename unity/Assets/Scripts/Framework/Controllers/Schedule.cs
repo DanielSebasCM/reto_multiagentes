@@ -23,6 +23,10 @@ public class Schedule : MonoBehaviour
 
     public TextMeshProUGUI text;
 
+    public Shader notFoundShader;
+
+    Shader originalShader;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -52,7 +56,7 @@ public class Schedule : MonoBehaviour
         Debug.Log("res:" + res.ToString());
         List<int> storagePos = new() { res.data[0].storage.x, res.data[0].storage.y };
         GameObject storage = Instantiate(storagePrefab, new Vector3(storagePos[0], 0, storagePos[1]), Quaternion.identity);
-
+        originalShader = storage.GetComponent<Renderer>().material.shader;
 
         List<ScriptHolder<FoodPrefab>> foods = new();
         List<ScriptHolder<Collector>> collectors = new();
@@ -88,10 +92,25 @@ public class Schedule : MonoBehaviour
         {
             step++;
             text.text = $"Step: {step}\nFood collected: {currentStep.collected_food}";
+
+            if (currentStep.storage.found) 
+            {
+                storage.GetComponent<Renderer>().material.shader = originalShader;
+            }
+            else
+            {
+                storage.GetComponent<Renderer>().material.shader = notFoundShader;
+            }
+
             // crear las instancias y ponerlas en el array
             foreach (Food currentFood in currentStep.food)
             {
                 GameObject foodInstance = Instantiate(foodPrefab, new Vector3(currentFood.x, 0.05f, currentFood.y), Quaternion.identity);
+                // if not found make black and white
+                if (!currentFood.found)
+                {
+                    foodInstance.GetComponent<Renderer>().material.shader = notFoundShader;
+                }
                 ScriptHolder<FoodPrefab> holder = new(foodInstance, foodInstance.GetComponent<FoodPrefab>());
                 foods.Add(holder);
             }
