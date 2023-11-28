@@ -22,8 +22,8 @@ class Server(BaseHTTPRequestHandler):
 
     @property
     def api_response(self):
-        model = StorageModel(GRID_WIDTH, GRID_HEIGH,
-                             N_EXPLORERS, N_COLELCTORS, MAX_FOOD)
+        model = StorageModel((GRID_WIDTH, GRID_HEIGH),
+                             (N_EXPLORERS, N_COLELCTORS), MAX_FOOD)
 
         for _ in range(MAX_STEPS):
             model.step()

@@ -17,9 +17,11 @@ U_TURN_LEFT_2 = 4
 
 class CollectorAgent(Agent):
 
-    def __init__(self, id, model: "StorageModel"):
+    def __init__(self, id, model: "StorageModel", simulating=False):
         super().__init__(id, model)
-        self.random.seed(12345)
+        if not simulating:
+            self.random.seed(12345)
+
         self.model = model
         self.type = COLLECTOR_TYPE
         self.food_collected = 0
@@ -49,7 +51,12 @@ class CollectorAgent(Agent):
 
     def move(self, cell: tuple[int, int]):
         if cell == None:
-            self.model.grid.move_agent(self, self.get_random_move())
+            rand_pos = self.get_random_move()
+            if rand_pos != None:
+                self.model.grid.move_agent(self, rand_pos)
+            else:
+                # print("No hay a donde moverse")
+                pass
             return
 
         pos = self.pos
@@ -132,10 +139,11 @@ class CollectorAgent(Agent):
 
 
 class ExplorerAgent(Agent):
-    def __init__(self, id, model: "StorageModel", col_start, col_end):
+    def __init__(self, id, model: "StorageModel", col_start, col_end, simulating=False):
         super().__init__(id, model)
         # print(f"Explorer {id} created, col_start: {col_start}, col_end: {col_end}")
-        self.random.seed(12345)
+        if not simulating:
+            self.random.seed(12345)
         self.model = model
         self.type = EXPLORER_TYPE
         self.col_start = col_start
@@ -259,13 +267,16 @@ class ExplorerAgent(Agent):
         except:
             # print("Te vas a caer pendejo")
             pass
+
 class StorageModel(Model):
     def __init__(self, shape : tuple[int, int], agents :tuple[int, int], max_food, render=False, simulating=False):
         # print parameters
         # print("Shape: ", shape)
         # print("Agents: ", agents)
         # print("Max Food: ", max_food)
-        self.random.seed(12345)
+        if not simulating:
+            self.random.seed(12345)
+
         self.width = shape[0]
         self.height = shape[1]
         self.explorers = agents[0]
@@ -314,14 +325,14 @@ class StorageModel(Model):
                 col_end += 1
                 extras -= 1
 
-            a = ExplorerAgent(id, self, col_start, col_end)
+            a = ExplorerAgent(id, self, col_start, col_end, simulating=simulating)
             self.grid.move_to_empty(a)
             self.schedule.add(a)
             id += 1
 
         for _ in range(self.collectors):
 
-            a = CollectorAgent(id, self)
+            a = CollectorAgent(id, self, simulating=simulating)
             self.grid.move_to_empty(a)
             self.schedule.add(a)
             id += 1
