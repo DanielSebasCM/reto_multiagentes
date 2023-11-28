@@ -1,8 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
-using System.Security.Cryptography;
 using UnityEngine;
 using TMPro;
+using System.Linq;
 
 public class Schedule : MonoBehaviour
 {
@@ -17,6 +17,8 @@ public class Schedule : MonoBehaviour
     public GameObject collectorAgentPrefab;
 
     public GameObject explorerAgentPrefab;
+
+    public GameObject pile;
 
     [Range(0.01f, 1f)]
     public float interval = 0.5f;
@@ -81,19 +83,44 @@ public class Schedule : MonoBehaviour
             holder.script.Init(explorer.id, explorer.x, explorer.y);
         }
 
-        // foreach (Food currentFood in res.data[0].food)
-        // {
-        //     GameObject foodInstance = Instantiate(foodPrefab, new Vector3(currentFood.x, 0, currentFood.y), Quaternion.identity);
-        //     ScriptHolder<FoodPrefab> holder = new(foodInstance, foodInstance.GetComponent<FoodPrefab>());
-        //     foods.Add(holder);
-        // }
         int step = 0;
+
+        int currLevel = 0;
+        int levels = 5;
+
+        int max_food = res.data[0].max_food;
+
+        List<int> threshholds = new();
+
+        for (int i = 1; i < levels; i++)
+        {
+            threshholds.Add(max_food / levels * i);
+        }
+
+        threshholds.Add(max_food);
+
+        List<GameObject> levelAssets = new();
+        foreach (Transform child in pile.transform)
+        {
+            levelAssets.Add(child.gameObject);
+        }
+
         foreach (Step currentStep in res.data)
         {
+            // change level when each step is met
+            if (currentStep.collected_food >= threshholds[currLevel])
+            {
+                currLevel += 1;
+                levelAssets
+                    .Where(asset => asset.CompareTag($"Level{currLevel}"))
+                    .ToList()
+                    .ForEach(asset => asset.SetActive(true));
+            }
+
             step++;
             text.text = $"Step: {step}\nFood collected: {currentStep.collected_food}";
 
-            if (currentStep.storage.found) 
+            if (currentStep.storage.found)
             {
                 storage.GetComponent<Renderer>().material.shader = originalShader;
             }
