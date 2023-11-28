@@ -41,8 +41,7 @@ class CollectorAgent(Agent):
         closest_distance = math.inf
         closest_food = None
         for cell in food_cells:
-            distance = math.sqrt(
-                (agent_pos[0] - cell[0])**2 + (agent_pos[1] - cell[1])**2)
+            distance = max(abs(cell[0] - agent_pos[0]), abs(cell[1] - agent_pos[1]))
             if distance < closest_distance:
                 closest_distance = distance
                 closest_food = cell
@@ -103,8 +102,7 @@ class CollectorAgent(Agent):
         closest_empty = None
         closest_distance = math.inf
         for empty_cell in empty_cells:
-            distance = math.sqrt(
-                (empty_cell[0] - cell[0])**2 + (empty_cell[1] - cell[1])**2)
+            distance = max(abs(empty_cell[0] - cell[0]), abs(empty_cell[1] - cell[1]))
             if distance < closest_distance:
                 closest_distance = distance
                 closest_empty = empty_cell
@@ -251,8 +249,7 @@ class ExplorerAgent(Agent):
             closest_empty = None
             closest_distance = math.inf
             for empty_cell in empty_cells:
-                distance = math.sqrt(
-                    (empty_cell[0] - new_pos[0])**2 + (empty_cell[1] - new_pos[1])**2)
+                distance = max(abs(empty_cell[0] - new_pos[0]), abs(empty_cell[1] - new_pos[1]))
                 if distance < closest_distance:
                     closest_distance = distance
                     closest_empty = empty_cell
@@ -276,6 +273,9 @@ class StorageModel(Model):
         # print("Max Food: ", max_food)
         if not simulating:
             self.random.seed(12345)
+
+        for _ in range(87):
+            self.random.random()
 
         self.width = shape[0]
         self.height = shape[1]
